@@ -279,7 +279,7 @@ void LCD_Driver::LCD_Clear(UWORD Color)
 void LCD_Driver::LCD_ClearBuf(void)
 {
     UWORD x, y;
-    UWORD Color = 0xffff;
+    UWORD Color = 0x0000;  //TBD make this dark an option
     for (y = 0; y < 128; y++) {
         for (x = 0; x < 160; x++ ) {//1 pixel = 2 byte
             spiram->SPIRAM_WR_Byte((x + y * 160)* 2, Color >> 8);
@@ -346,6 +346,40 @@ void LCD_Driver::LCD_DrawPoint(int x, int y, int Color, int Dot)
         }
     }
 }
+void LCD_Driver::LCD_DrawLine(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour)   
+{   
+    unsigned int t;    
+    int xerr=0,yerr=0,delta_x,delta_y,distance;    
+    int incx,incy,uRow,uCol;    
+    delta_x=x2-x1;    
+    delta_y=y2-y1;    
+    uRow=x1;    
+    uCol=y1;    
+    if(delta_x>0)incx=1;   
+    else if(delta_x==0)incx=0;    
+    else {incx=-1;delta_x=-delta_x;}    
+    if(delta_y>0)incy=1;    
+    else if(delta_y==0)incy=0;    
+    else{incy=-1;delta_y=-delta_y;}    
+    if( delta_x>delta_y)distance=delta_x;   
+    else distance=delta_y;    
+    for(t=0;t<=distance+1;t++ )   
+    {     
+        LCD_DrawPoint(uRow,uCol,colour,1);   
+        xerr+=delta_x ;    
+        yerr+=delta_y ;    
+        if(xerr>distance)    
+        {    
+            xerr-=distance;    
+            uRow+=incx;    
+        }    
+        if(yerr>distance)    
+        {    
+            yerr-=distance;    
+            uCol+=incy;    
+        }    
+    }     
+}
 
 void LCD_Driver::LCD_DisChar_1207(int Xchar, int Ychar, int Char_Offset, int Color)
 {
@@ -365,3 +399,100 @@ void LCD_Driver::LCD_DisChar_1207(int Xchar, int Ychar, int Char_Offset, int Col
             ptr++;
     }// Write all
 }
+
+void LCD_Driver::LCD_DisString(int Xchar, int Ychar, char Charval[], int Color)
+{
+  int Xpoint = Xchar;
+  int Ypoint = Ychar;
+  int Font_Height = 12;
+  int Font_Width = 7;
+  for (int i = 0; Charval[i] != 0; i++){
+      int ch_asicc =  (int)Charval[i] - 32;//NULL = 32
+      int Char_Offset = ch_asicc * Font_Height;
+			// let Char_Offset = ch_asicc * Font_Height *(Font_Width/8 +(Font_Width%8?1:0));
+			
+            if((Xpoint + Font_Width) > 160) {
+                Xpoint = Xchar;
+                Ypoint += Font_Height;
+            }
+
+            // If the Y direction is full, reposition to(Xstart, Ystart)
+            if((Ypoint  + Font_Height) > 128) {
+                Xpoint = Xchar;
+                Ypoint = Ychar;
+            }
+            LCD_DisChar_1207(Xpoint, Ypoint, Char_Offset, Color);
+
+            //The next word of the abscissa increases the font of the broadband
+            Xpoint += Font_Width;
+  }
+
+}
+
+void LCD_Driver::LCD_DrawRectangle(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour, unsigned int fill)
+{  
+    int Ypoint;
+    if (fill) {
+      for(Ypoint = y1; Ypoint < y2; Ypoint++) { //TBD needs to be written to be independant of whats higher.
+        LCD_DrawLine(x1, Ypoint, x2, Ypoint, colour);
+      }
+    }else{
+        LCD_DrawLine(x1,y1,x2,y1,colour);   
+        LCD_DrawLine(x1,y1,x1,y2,colour);   
+        LCD_DrawLine(x1,y2,x2,y2,colour);   
+        LCD_DrawLine(x2,y1,x2,y2,colour);
+    }   
+}   
+   
+void LCD_Driver::_draw_circle_8(int xc, int yc, int x, int y, unsigned int colour)   
+{   
+    LCD_DrawPoint(xc + x, yc + y, colour, 3);   //TBD add a size option
+    LCD_DrawPoint(xc - x, yc + y, colour, 3);   
+    LCD_DrawPoint(xc + x, yc - y, colour, 3);   
+    LCD_DrawPoint(xc - x, yc - y, colour, 3);   
+    LCD_DrawPoint(xc + y, yc + x, colour, 3);   
+    LCD_DrawPoint(xc - y, yc + x, colour, 3);   
+    LCD_DrawPoint(xc + y, yc - x, colour, 3);   
+    LCD_DrawPoint(xc - y, yc - x, colour, 3);   
+}   
+   
+void LCD_Driver::LCD_DrawCircle(int xc, int yc,int r,unsigned int colour, int fill)   
+{   
+    int x = 0, y = r, yi, d;   
+    d = 3 - 2 * r;   
+    if (fill)    
+    {          
+        while (x <= y)   
+        {   
+            for (yi = x; yi <= y; yi++)   
+                _draw_circle_8(xc, yc, x, yi, colour);   
+            if (d < 0)    
+            {   
+                d = d + 4 * x + 6;   
+            }    
+            else    
+            {   
+                d = d + 4 * (x - y) + 10;   
+                y--;   
+            }   
+            x++;   
+        }   
+    }    
+    else    
+    {      
+        while (x <= y)    
+        {   
+            _draw_circle_8(xc, yc, x, y, colour);   
+            if (d < 0)   
+            {   
+                d = d + 4 * x + 6;   
+            }    
+            else    
+            {   
+                d = d + 4 * (x - y) + 10;   
+                y--;   
+            }   
+            x++;   
+        }   
+    }   
+}   

@@ -1,105 +1,46 @@
 # LCD1in8
 
-waveshare electronics
-
-![Waveshare_logo.png](Waveshare_logo.png)
+waveshare electronics 1.8" C yotta microbit code.
 
 # Package product
 https://www.waveshare.com/1.8inch-lcd-for-micro-bit.htm
 
-# test
-Test can refer to test.ts
+# Overview
+This is a small subset of commands to talk to the waveshare lcd from the micro:bit using yotta. The official code base uses makecode which can be a tad restrictive if your in a custom microbit project.
 
-# user
-If you find a problem with the https://makecode.microbit.org/#
-programming website, you can't download it. 
-Try https://makecode.microbit.org/v0 to edit your project.
-For reference, please refer to our user manual.
-Chinese wiki: http://www.waveshare.net/wiki/1.8inch_LCD_for_micro:bit
-English wiki: https://www.waveshare.com/wiki/1.8inch_LCD_for_micro:bit
+This should also talk to any SPI based ST7735S LCD available as long as the following pinouts are defined;
 
-If you find that there are many places to change, 
-such as the function name changed you can find the answer here,
-Or contact us
+PIN micro:bit PIN	Description
+Vcc	3V3	Power
+GND	GND	Ground
+MISO	P14	SPI data master input/slave output
+MOSI	P15	SPI data master output/slave input
+SCK	P13	SPI clock input
+LCD_CS	P16	LCD chip selection
+RAM_CS	P2	SRAM chip selection
+DC	P12	LCD data/command
+RST	P8	LCD reset
+BL	P1	LCD backlight
 
-1.Initiation: 
-You need to initial LCD module first.
 
-block: LCD1IN8 Init.
-javascript: LCD_Init()
+I compile and run this using yotta as part of my main.cpp
 
-2.Clear the screen:
-Clear the screen to white. Create an buffer on RAM with the resolution size 160*128 and initial it to white.
 
-block: Clear Clear screen and cache.
-javascript: LCD_Init()
+#include "LCD_Driver.h"
+LCD_Driver ldriv;
 
-3.Set the backlight:
-
-block: Set back light level.
-javascript: LCD_SetBL()
-
-4.Send display data:
-With this block, it will send one frame of buffer to the LCD and display. 
-Note: it is always following drawing operation.
-
-block: Send display data.
-javascript: LCD_Display()
-
-5.Send widows display data:
-Sometimes it is not necessary to refresh the entire screen data, 
-only need to display part of the window data.
-
-block: Send widows display data.
-javascript: LCD_DisplayWindows()
-
-6.Clear screen and cache:
-
-block: Clear screen and cache.
-javascript: LCD_Clear()
-
-7.Fill the full screen color:
-block: Filling Color.
-javascript: LCD_Filling()
-
-8.Draw point:
-Place the block before send display data. 
-You can choose the position, color and size. 
-For the screen, (1,1) is on top-left, and (160,128) is on bottom-right
-There are tow way to set the color, 
-the one is use the color block as above, 
-another is to set the value (RGB565) by drag the slider.
-
-block: Draw Point.
-javascript: DrawPoint()
-
-9.Draw line:
-You can choose the the line's position, color, size and its sytle.
-
-block: Draw Line.
-javascript: DrawLine()
-
-10.Draw rectange:
-
-block: Draw Rectange.
-javascript: DrawRectangle()
-
-11.Draw Circle:
-
-block: Draw Circle.
-javascript: DrawCirclee()
-
-12.Show String:
-
-block: Show String.
-javascript: DisString()
-
-13.Show number:
-
-block: Show number.
-javascript: DisNumber()
-
-#More parameters can be found in test.ts for a detailed understanding.
+ldriv.LCD_Init(void); //Initialise the LCD
+ldriv.LCD_SetBL(int Lev); //doesnt seem to work but should change the lcd brightness
+ldriv.LCD_Clear(UWORD Color); // sets the BG colour so to clear just call LCD_Clear(0xFFFF); (for white)
+ldriv.LCD_ClearBuf(void); //Clear LCD buffer
+ldriv.LCD_Display(void); // Draw the screen with whatever changes you have sent
+ldriv.LCD_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend); // TBD not sure
+ldriv.LCD_DrawPoint(int x, int y, int Color, int Dot); // draw pixel
+ldriv.LCD_DrawLine(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour); //Draw a line (really draws several pixels)
+ldriv.LCD_DisString(int Xchar, int Ychar, char Charval[], int Color); // Write String
+ldriv.LCD_DrawRectangle(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour, unsigned int fill); // draw a square filled, great for screen refreshs of a small area
+ldriv.LCD_DrawCircle(int xc, int yc,int r,unsigned int colour, int fill); // Draw a circle and fill it   
+ldriv.LCD_DisChar_1207(int Xchar, int Ychar, int Char_Offset, int Color); // Draw a single character
 
 ## License
 
@@ -107,6 +48,6 @@ MIT
 
 ## Supported targets
 
-* for PXT/microbit
+* for Yotta/microbit
 (The metadata above is needed for package search.)
 

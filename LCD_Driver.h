@@ -70,6 +70,11 @@ public:
     void LCD_DisplayWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
     
 	void LCD_DrawPoint(int x, int y, int Color, int Dot);
+  void LCD_DrawLine(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour);
+  void LCD_DisString(int Xchar, int Ychar, char Charval[], int Color);
+  void LCD_DrawRectangle(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2,unsigned int colour, unsigned int fill);
+  void _draw_circle_8(int xc, int yc, int x, int y, unsigned int colour);
+  void LCD_DrawCircle(int xc, int yc,int r,unsigned int colour, int fill);   
 	void LCD_DisChar_1207(int Xchar, int Ychar, int Char_Offset, int Color);
 };
 
